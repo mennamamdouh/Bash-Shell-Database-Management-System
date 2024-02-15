@@ -1,8 +1,27 @@
 #!/bin/bash
 
-#TODO: Check the data types of the inserted data --> List of data types --> Check if the word contains characters - number - boolean - or both
+shopt -s extglob
+
+#TODO: Check the data types of the inserted data --> List of data types --> Check if the word contains characters - number - boolean - or both (DONE)
 #TODO: Back to database options (DONE)
 #TODO: Password for databases
+
+checkDataType() {
+    # Variable $1 represents the input that we want to check its data type
+    case $1 in
+        +([a-zA-Z]))
+            echo "varchar"
+        ;;
+
+        +([1-9]))
+            echo "number"
+        ;;
+
+        *)
+            echo "invalid"
+        ;;
+    esac
+}
 
 displayTbOptions() {
     select option in "CREATE TABLE" "INSERT INTO TABLE" "SHOW TABLES" "SELECT * FROM TABLE" "DROP TABLE" "DISCONNECT" "Exit"
@@ -14,7 +33,18 @@ displayTbOptions() {
                 then
                     echo "Table already exists."
                 else
-                    read -p "Please enter the number of columns: " colNumber
+                    while true
+                    do
+                        read -p "Please enter the number of columns: " colNumber
+                        result=$(checkDataType ${colNumber})
+                        if [[ "${result}" != "number" ]]
+                        then
+                            echo "Please enter a valid number."
+                            continue
+                        else
+                            break
+                        fi
+                    done
                     metaFileName="${TBName}_META.txt"
                     touch $metaFileName
                     touch "${TBName}.txt"
@@ -26,9 +56,22 @@ displayTbOptions() {
                         read -p "Name: " ColName
                         line+=$ColName
                         read -p "DataType: " ColType
-                        line+=:$ColType
-                        echo $line >> $metaFileName
-                        echo ""
+                        while true
+                        do
+                            case $ColType in
+                                "number" | "varchar")
+                                    line+=:$ColType
+                                    echo $line >> $metaFileName
+                                    echo ""
+                                    break
+                                ;;
+
+                                *)
+                                    echo "Please enter one of the valid data types: number - varchar"
+                                    read -p "DataType: " ColType
+                                ;;
+                            esac
+                        done
                     done
                     echo "Table is created successfully."
                 fi
@@ -39,12 +82,24 @@ displayTbOptions() {
                 if [[ -e ${TBName}.txt ]]
                 then
                     metaFileName="${TBName}_META.txt"
-                    result=$(cat $metaFileName | cut -d: -f1)
+                    columns=($(cat $metaFileName | cut -d: -f1))
+                    datatypes=($(cat $metaFileName | cut -d: -f2))
                     line=""
-                    for i in $result
+                    for i in "${!columns[@]}"
                     do
-                        read -p "Enter $i: " data
-                        line+=:$data
+                        while true
+                        do
+                            read -p "Enter ${columns[i]}: " data
+                            result=$(checkDataType ${data})
+                            if [[ "${result}" != "invalid" ]]
+                            then
+                                line+=:$data
+                                break
+                            else
+                                echo "Unmatched data type of your input. You should enter ${datatypes[i]}."
+                                continue
+                            fi
+                        done
                     done
                     echo ${line:1} >> ${TBName}.txt
                     echo "Data is inserted successfully."
@@ -55,7 +110,7 @@ displayTbOptions() {
 
             "SHOW TABLES")
                 DBName=$(pwd | awk -F/ '{print $NF}')
-                if [ -z "$(ls -p)" ]
+                if [[ -z "$(ls -p)" ]]
                 then
                     echo "There's no tables yet in ${DBName}."
                 else
@@ -69,10 +124,15 @@ displayTbOptions() {
                 read -p "Please enter the table name: " TBName
                 if [[ -e ${TBName}.txt ]]
                 then
-                    metaFileName="${TBName}_META.txt"
-                    result=$(cat $metaFileName | cut -d: -f1)
-                    echo $result
-                    cat ${TBName}.txt | awk -F: '{gsub(FS," ")} 1'
+                    if [[ -z "$(cat ${TBName}.txt)" ]]
+                    then
+                        echo "There's no data yet in ${TBName}."
+                    else
+                        metaFileName="${TBName}_META.txt"
+                        result=$(cat $metaFileName | cut -d: -f1)
+                        echo $result
+                        cat ${TBName}.txt | awk -F: '{gsub(FS," ")} 1'
+                    fi
                 else
                     echo "There's no table with the name ${TBName}."
                 fi
@@ -128,13 +188,13 @@ Enter a valid option number# "
         case $option in
             "CREATE DATABASE")
                 read -p "Please enter database name: " DBName
-                if [ -z $DBName ]
+                if [[ -z $DBName ]]
                 then
                     echo "Input is empty."
                     continue
                 fi
                 
-                if [ ! -e databases/$DBName ]
+                if [[ ! -e "$(pwd)"/$DBName ]]
                 then
                     mkdir databases/$DBName
                     echo "Database created successfully."
@@ -145,18 +205,18 @@ Enter a valid option number# "
 
             "CONNECT DATABASE")
                 read -p "Please enter the database name: " ConDB
-                if [ -z $ConDB ]
+                if [[ -z $ConDB ]]
                 then
                     echo "Input is empty."
                     continue
                 fi
 
-                if [ -e databases/$ConDB ]
+                if [[ -e databases/$ConDB ]]
                 then
                     cd databases/$ConDB
                     echo "Database connected successfully."
                     echo "In a few moments you'll be directed to the tables options..."
-                    sleep 5
+                    sleep 1
                     clear
                     echo "Tables Options:"
                     echo "---------------"
@@ -167,25 +227,25 @@ Enter a valid option number# "
             ;;
 
             "SHOW DATABASES")
-                if [ -z "$(find databases -mindepth 1 -maxdepth 1)" ]
+                if [[ -z "$(find "$(pwd)" -mindepth 1 -maxdepth 1)" ]]
                 then
                     echo "There's no databases."
                 else
                     echo "Databases:"
                     echo "----------"
-                    ls -d databases/* | awk -F/ '{print $2}'                    
+                    ls -d databases/* | awk -F/ '{print $2}'
                 fi
             ;;
 
             "DROP DATABASE")
                 read -p "Please Enter Database Name: " DBName
-                if [ -z $DBName ]
+                if [[ -z $DBName ]]
                 then
                     echo "Input is empty."
                     continue
                 fi
 
-                if [ -e databases/$DBName ]
+                if [[ -e databases/$DBName ]]
                 then
                     rm -rf databases/$DBName
                     echo "The selected database was deleted successfully."
