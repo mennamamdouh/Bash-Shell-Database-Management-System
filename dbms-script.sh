@@ -116,10 +116,22 @@ displayTbOptions() {
                     do
                         while true
                         do
-                            read -p "Enter ${columns[i]}: " data
+                            read -p "Enter ${columns[i]}: " data       
                             result=$(checkDataType ${data})
                             if [[ "${result}" != "invalid" ]]
                             then
+                                if [[ $i -eq 0 ]]
+                                then                      
+                                    count=$(awk -v pat="$data" -F: '$1 ~ pat { print $0 }' ${TBName}.txt | wc -l)
+                                    if [[ $count -eq 0 ]]
+                                    then
+                                        line+=:$data
+                                        break
+                                    else
+                                        echo "Duplicated value for the Primary Key."
+                                        continue
+                                    fi
+                                fi
                                 line+=:$data
                                 break
                             else
