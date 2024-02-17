@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# This file contains the whole code before separating it into 3 files
+
 shopt -s extglob
 
 checkDataType() {
