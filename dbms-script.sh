@@ -2,14 +2,6 @@
 
 shopt -s extglob
 
-#TODO: Check the data types of the inserted data --> List of data types --> Check if the word contains characters - number - boolean - or both (DONE)
-#TODO: Back to database options (DONE)
-#TODO: Specify the PK in creating the table (DONE)
-#TODO: Inserting the PK in the insert option before the loop (DONE)
-#TODO: Update table (DONE)
-#TODO: Delete from table     (sed)
-#TODO: Error for the first database (DONE)
-
 checkDataType() {
     # Variable $1 represents the input that we want to check its data type
     case $1 in
@@ -33,6 +25,11 @@ displayTbOptions() {
         case $option in
             "CREATE TABLE")
                 read -p "Please enter table name: " TBName
+                if [[ -z $TBName ]]
+                then
+                    echo "Input is empty."
+                    continue
+                fi
                 if [[ -e ${TBName}.txt ]]
                 then
                     echo "Table already exists."
@@ -107,6 +104,11 @@ displayTbOptions() {
 
             "INSERT INTO TABLE")         
                 read -p "Please enter the table name: " TBName
+                if [[ -z $TBName ]]
+                then
+                    echo "Input is empty."
+                    continue
+                fi
                 if [[ -e ${TBName}.txt ]]
                 then
                     metaFileName="${TBName}_META.txt"
@@ -150,6 +152,11 @@ displayTbOptions() {
 
             "SELECT * FROM TABLE")
                 read -p "Please enter the table name: " TBName
+                if [[ -z $TBName ]]
+                then
+                    echo "Input is empty."
+                    continue
+                fi
                 if [[ -e ${TBName}.txt ]]
                 then
                     if [[ -z "$(cat ${TBName}.txt)" ]]
@@ -168,6 +175,11 @@ displayTbOptions() {
 
             "DROP TABLE")
                 read -p "Please enter the table name: " TBName
+                if [[ -z $TBName ]]
+                then
+                    echo "Input is empty."
+                    continue
+                fi
                 metaFileName="${TBName}_META.txt"
                 if [[ -e ${TBName}.txt && -e ${metaFileName} ]]
                 then
@@ -184,6 +196,11 @@ displayTbOptions() {
 
             "UPDATE TABLE")         
                 read -p "Please enter the table name: " TBName
+                if [[ -z $TBName ]]
+                then
+                    echo "Input is empty."
+                    continue
+                fi
                 if [[ -e ${TBName}.txt ]]
                 then
                     metaFileName="${TBName}_META.txt"
@@ -236,6 +253,11 @@ displayTbOptions() {
 
             "DELETE FROM TABLE")
                 read -p "Please enter the table name: " TBName
+                if [[ -z $TBName ]]
+                then
+                    echo "Input is empty."
+                    continue
+                fi
                 if [[ -e ${TBName}.txt ]]
                 then
                     metaFileName="${TBName}_META.txt"
@@ -283,8 +305,8 @@ displayTbOptions() {
             "DISCONNECT")
                 echo "Database disconnected successfully."
                 echo "In a few moments you'll be directed to the databases options..."
-                sleep 5
-                cd ../..
+                sleep 3
+                cd "$DBDir"
                 clear
                 echo "Databases Options:"
                 echo "------------------"
@@ -309,7 +331,7 @@ displayTbOptions() {
 displayDbOptions(){
     PS3="
 Enter a valid option number# "
-    select option in "CREATE DATABASE" "CONNECT DATABASE" "SHOW DATABASES" "DROP DATABASE" "Exit"
+    select option in "CREATE DATABASE" "CONNECT DATABASE" "SHOW DATABASES" "DROP DATABASE" "CLEAR" "Exit"
     do
         case $option in
             "CREATE DATABASE")
@@ -320,9 +342,9 @@ Enter a valid option number# "
                     continue
                 fi
                 
-                if [[ ! -e "$(pwd)"/$DBName ]]
+                if [[ ! -e "$DBDir/$DBName" ]]
                 then
-                    mkdir $DBName
+                    mkdir "$DBDir/$DBName"
                     echo "Database created successfully."
                 else
                     echo "Database already exists."
@@ -337,12 +359,12 @@ Enter a valid option number# "
                     continue
                 fi
 
-                if [[ -e "$(pwd)"/$ConDB ]]
+                if [[ -e "$DBDir/$ConDB" ]]
                 then
-                    cd "$(pwd)"/$ConDB
+                    cd "$DBDir/$ConDB"
                     echo "Database connected successfully."
                     echo "In a few moments you'll be directed to the tables options..."
-                    sleep 1
+                    sleep 3
                     clear
                     echo "Tables Options:"
                     echo "---------------"
@@ -353,13 +375,13 @@ Enter a valid option number# "
             ;;
 
             "SHOW DATABASES")
-                if [[ -z "$(find "$(pwd)" -mindepth 1 -maxdepth 1)" ]]
+                if [[ -z "$(find "$DBDir" -mindepth 1 -maxdepth 1)" ]]
                 then
                     echo "There's no databases."
                 else
                     echo "Databases:"
                     echo "----------"
-                    ls -d "$(pwd)"/* | awk -F/ '{print $NF}'
+                    ls -d "$DBDir"/* | awk -F/ '{print $NF}'
                 fi
             ;;
 
@@ -371,13 +393,17 @@ Enter a valid option number# "
                     continue
                 fi
 
-                if [[ -e "$(pwd)"/$DBName ]]
+                if [[ -e $DBDir/$DBName ]]
                 then
-                    rm -rf databases/$DBName
+                    rm -rf "$DBDir/$DBName"
                     echo "The selected database was deleted successfully."
                 else
                     echo "Database does not exist."
                 fi
+            ;;
+
+            "CLEAR")
+                main_program
             ;;
 
             "Exit")
@@ -398,7 +424,6 @@ checkDbDir(){
     then
         mkdir databases
     fi
-    cd databases/
 }
 
 # Main program
@@ -417,9 +442,12 @@ main_program(){
     # Start the program
     echo "Databases Options:"
     echo "------------------"
-    checkDbDir
+    DBDir=$(pwd)/databases
     displayDbOptions
 }
+
+# Check the required directory for the databases
+checkDbDir
 
 # Calling the main program
 main_program
