@@ -4,7 +4,10 @@ shopt -s extglob
 
 #TODO: Check the data types of the inserted data --> List of data types --> Check if the word contains characters - number - boolean - or both (DONE)
 #TODO: Back to database options (DONE)
-#TODO: Password for databases
+#TODO: specify the PK in creating the table (DONE)
+#TODO: inserting the PK in the insert option before the loop
+#TODO: update from table
+#TODO: delete from table     (sed)
 
 checkDataType() {
     # Variable $1 represents the input that we want to check its data type
@@ -49,7 +52,31 @@ displayTbOptions() {
                     touch $metaFileName
                     touch "${TBName}.txt"
 
-                    for ((i=0; i<$colNumber; i++))
+                    line=""
+                    echo "Enter the primary key's data"
+                    read -p "Name: " ColName
+                    line+=$ColName 
+                    read -p "DataType: " ColType 
+                        while true
+                        do
+                            case $ColType in
+                                "number" | "varchar")
+                                    line+=":$ColType:PK"
+                                    echo $line >> $metaFileName
+                                    echo ""
+                                    break
+                                ;;
+
+                                *)
+                                    echo "Please enter one of the valid data types: number - varchar"
+                                    read -p "DataType: " ColType
+                                ;;
+                            esac
+                        done
+
+                     
+
+                    for ((i=1; i<$colNumber; i++))
                     do
                         echo "Column number $((i+1)):"
                         line=""
