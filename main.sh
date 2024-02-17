@@ -1,6 +1,9 @@
 #!/bin/bash
 
+# This file mainly contains 2 functions, the main program, and a function which ensure the existance of the databases directory.
+
 checkDbDir(){
+    # if doesn't exist, it'll be created
     if [[ ! -d databases/ ]]
     then
         mkdir databases
@@ -23,7 +26,11 @@ main_program(){
     # Start the program
     echo "Databases Options:"
     echo "------------------"
+
+    # Save the path of the databases directory into variable to be able to use it in the other files
     DBDir=$(pwd)/databases
+
+    # Call the displayDbOptions that in dp-options.sh file
     displayDbOptions
 }
 
