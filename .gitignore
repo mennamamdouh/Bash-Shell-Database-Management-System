@@ -1,3 +1,2 @@
-test.sh
-test.txt
+tests/*
 databases/*
