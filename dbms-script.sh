@@ -5,9 +5,10 @@ shopt -s extglob
 #TODO: Check the data types of the inserted data --> List of data types --> Check if the word contains characters - number - boolean - or both (DONE)
 #TODO: Back to database options (DONE)
 #TODO: specify the PK in creating the table (DONE)
-#TODO: inserting the PK in the insert option before the loop
+#TODO: inserting the PK in the insert option before the loop (DONE)
 #TODO: update from table
 #TODO: delete from table     (sed)
+#TODO: Error for the first database
 
 checkDataType() {
     # Variable $1 represents the input that we want to check its data type
@@ -27,7 +28,7 @@ checkDataType() {
 }
 
 displayTbOptions() {
-    select option in "CREATE TABLE" "INSERT INTO TABLE" "SHOW TABLES" "SELECT * FROM TABLE" "DROP TABLE" "DISCONNECT" "Exit"
+    select option in "CREATE TABLE" "INSERT INTO TABLE" "UPDATE FROM TABLE" "SHOW TABLES" "SELECT * FROM TABLE" "DROP TABLE" "DISCONNECT" "Exit"
     do
         case $option in
             "CREATE TABLE")
@@ -147,6 +148,58 @@ displayTbOptions() {
                 fi
             ;;
 
+            "UPDATE FROM TABLE")         
+                read -p "Please enter the table name: " TBName
+                if [[ -e ${TBName}.txt ]]
+                then
+                    metaFileName="${TBName}_META.txt"
+                    columns=($(cat $metaFileName | cut -d: -f1))
+                    datatypes=($(cat $metaFileName | cut -d: -f2))
+                    for i in "${!columns[@]}"
+                    do
+                        while true
+                        do
+                            if [[ $i -eq 0 ]]
+                            then
+                                read -p "Enter ${columns[i]} for the targeted record: " id
+                                result=$(checkDataType ${id})
+                                if [[ "${result}" != "invalid" ]]
+                                then                    
+                                    count=$(awk -v pat="$id" -F: '$1 ~ pat { print $0 }' ${TBName}.txt | wc -l)
+                                    if [[ $count -ne 0 ]]
+                                    then
+                                        oldLine=$(awk -v pat="$id" -F: '$1 ~ pat { print $0 }' ${TBName}.txt)
+                                        newLine=${id}
+                                        break
+                                    else
+                                        echo "This value doesn't exist."
+                                        continue
+                                    fi                                
+                                else
+                                    echo "Unmatched data type of your input. You should enter ${datatypes[i]}."
+                                    continue
+                                fi
+                            else
+                                read -p "Enter new value for ${columns[i]}: " newValue
+                                result=$(checkDataType ${newValue})
+                                if [[ "${result}" != "invalid" ]]
+                                then
+                                    newLine+=:${newValue}
+                                    break
+                                else
+                                    echo "Unmatched data type of your input. You should enter ${datatypes[i]}."
+                                    continue
+                                fi
+                            fi
+                        done
+                    done
+                    sed -i "s/${oldLine}/${newLine}/g" ${TBName}.txt
+                    echo "Data is updated successfully."
+                else
+                    echo "There's no table with the name ${TBName}."
+                fi
+            ;;
+
             "SHOW TABLES")
                 DBName=$(pwd | awk -F/ '{print $NF}')
                 if [[ -z "$(ls -p)" ]]
@@ -235,7 +288,7 @@ Enter a valid option number# "
                 
                 if [[ ! -e "$(pwd)"/$DBName ]]
                 then
-                    mkdir databases/$DBName
+                    mkdir $DBName
                     echo "Database created successfully."
                 else
                     echo "Database already exists."
@@ -250,9 +303,9 @@ Enter a valid option number# "
                     continue
                 fi
 
-                if [[ -e databases/$ConDB ]]
+                if [[ -e "$(pwd)"/$ConDB ]]
                 then
-                    cd databases/$ConDB
+                    cd "$(pwd)"/$ConDB
                     echo "Database connected successfully."
                     echo "In a few moments you'll be directed to the tables options..."
                     sleep 1
@@ -272,7 +325,7 @@ Enter a valid option number# "
                 else
                     echo "Databases:"
                     echo "----------"
-                    ls -d databases/* | awk -F/ '{print $2}'
+                    ls -d "$(pwd)"/* | awk -F/ '{print $NF}'
                 fi
             ;;
 
@@ -284,7 +337,7 @@ Enter a valid option number# "
                     continue
                 fi
 
-                if [[ -e databases/$DBName ]]
+                if [[ -e "$(pwd)"/$DBName ]]
                 then
                     rm -rf databases/$DBName
                     echo "The selected database was deleted successfully."
@@ -310,8 +363,9 @@ checkDbDir(){
     if [[ ! -d databases/ ]]
     then
         mkdir databases
-        cd databases/
     fi
+    cd databases/
+    source
 }
 
 # Main program
