@@ -4,11 +4,11 @@ shopt -s extglob
 
 #TODO: Check the data types of the inserted data --> List of data types --> Check if the word contains characters - number - boolean - or both (DONE)
 #TODO: Back to database options (DONE)
-#TODO: specify the PK in creating the table (DONE)
-#TODO: inserting the PK in the insert option before the loop (DONE)
-#TODO: update from table
-#TODO: delete from table     (sed)
-#TODO: Error for the first database
+#TODO: Specify the PK in creating the table (DONE)
+#TODO: Inserting the PK in the insert option before the loop (DONE)
+#TODO: Update table (DONE)
+#TODO: Delete from table     (sed)
+#TODO: Error for the first database (DONE)
 
 checkDataType() {
     # Variable $1 represents the input that we want to check its data type
@@ -28,7 +28,7 @@ checkDataType() {
 }
 
 displayTbOptions() {
-    select option in "CREATE TABLE" "INSERT INTO TABLE" "UPDATE FROM TABLE" "SHOW TABLES" "SELECT * FROM TABLE" "DROP TABLE" "DISCONNECT" "Exit"
+    select option in "CREATE TABLE" "INSERT INTO TABLE" "SELECT * FROM TABLE" "DROP TABLE" "UPDATE TABLE" "DELETE FROM TABLE" "SHOW TABLES" "DISCONNECT" "Exit"
     do
         case $option in
             "CREATE TABLE")
@@ -148,7 +148,41 @@ displayTbOptions() {
                 fi
             ;;
 
-            "UPDATE FROM TABLE")         
+            "SELECT * FROM TABLE")
+                read -p "Please enter the table name: " TBName
+                if [[ -e ${TBName}.txt ]]
+                then
+                    if [[ -z "$(cat ${TBName}.txt)" ]]
+                    then
+                        echo "There's no data yet in ${TBName}."
+                    else
+                        metaFileName="${TBName}_META.txt"
+                        result=$(cat $metaFileName | cut -d: -f1)
+                        echo $result
+                        cat ${TBName}.txt | awk -F: '{gsub(FS," ")} 1'
+                    fi
+                else
+                    echo "There's no table with the name ${TBName}."
+                fi
+            ;;
+
+            "DROP TABLE")
+                read -p "Please enter the table name: " TBName
+                metaFileName="${TBName}_META.txt"
+                if [[ -e ${TBName}.txt && -e ${metaFileName} ]]
+                then
+                    rm -f ${TBName}.txt
+                    rm -f $metaFileName
+                    if [[ $? -eq 0 ]]
+                    then
+                        echo "The selected table was deleted successfully."
+                    fi
+                else
+                    echo "There's no table with the name ${TBName}."
+                fi
+            ;;
+
+            "UPDATE TABLE")         
                 read -p "Please enter the table name: " TBName
                 if [[ -e ${TBName}.txt ]]
                 then
@@ -200,6 +234,40 @@ displayTbOptions() {
                 fi
             ;;
 
+            "DELETE FROM TABLE")
+                read -p "Please enter the table name: " TBName
+                if [[ -e ${TBName}.txt ]]
+                then
+                    metaFileName="${TBName}_META.txt"
+                    columns=($(cat $metaFileName | cut -d: -f1))
+                    datatypes=($(cat $metaFileName | cut -d: -f2))
+                    while true
+                    do
+                        read -p "Enter ${columns[0]} for the targeted record: " id
+                        result=$(checkDataType ${id})
+                        if [[ "${result}" != "invalid" ]]
+                        then                    
+                            count=$(awk -v pat="$id" -F: '$1 ~ pat { print $0 }' ${TBName}.txt | wc -l)
+                            if [[ $count -ne 0 ]]
+                            then
+                                oldLine=$(awk -v pat="$id" -F: '$1 ~ pat { print $0 }' ${TBName}.txt)
+                                break
+                            else
+                                echo "This value doesn't exist."
+                                continue
+                            fi                                
+                        else
+                            echo "Unmatched data type of your input. You should enter ${datatypes[0]}."
+                            continue
+                        fi
+                    done
+                    sed -i "/${oldLine}/d" ${TBName}.txt
+                    echo "Data is deleted successfully."
+                else
+                    echo "There's no table with the name ${TBName}."
+                fi
+            ;;
+
             "SHOW TABLES")
                 DBName=$(pwd | awk -F/ '{print $NF}')
                 if [[ -z "$(ls -p)" ]]
@@ -209,40 +277,6 @@ displayTbOptions() {
                     echo "Tables:"
                     echo "-------"
                     ls -p | grep -v / | grep -v _META.txt | awk -F. '{print $1}'
-                fi
-            ;;
-
-            "SELECT * FROM TABLE")
-                read -p "Please enter the table name: " TBName
-                if [[ -e ${TBName}.txt ]]
-                then
-                    if [[ -z "$(cat ${TBName}.txt)" ]]
-                    then
-                        echo "There's no data yet in ${TBName}."
-                    else
-                        metaFileName="${TBName}_META.txt"
-                        result=$(cat $metaFileName | cut -d: -f1)
-                        echo $result
-                        cat ${TBName}.txt | awk -F: '{gsub(FS," ")} 1'
-                    fi
-                else
-                    echo "There's no table with the name ${TBName}."
-                fi
-            ;;
-            
-            "DROP TABLE")
-                read -p "Please enter the table name: " TBName
-                metaFileName="${TBName}_META.txt"
-                if [[ -e ${TBName}.txt && -e ${metaFileName} ]]
-                then
-                    rm -f ${TBName}.txt
-                    rm -f $metaFileName
-                    if [[ $? -eq 0 ]]
-                    then
-                        echo "The selected table was deleted successfully."
-                    fi
-                else
-                    echo "There's no table with the name ${TBName}."
                 fi
             ;;
 
@@ -365,7 +399,6 @@ checkDbDir(){
         mkdir databases
     fi
     cd databases/
-    source
 }
 
 # Main program
