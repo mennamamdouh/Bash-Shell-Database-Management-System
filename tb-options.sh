@@ -234,13 +234,18 @@ insertData(){
 }
 
 createTB(){
-    read -p "Please enter table name: " TBName
-    # Check first if the input is empty
-    if [[ -z $TBName ]]
-    then
-        echo "Input is empty."
-        continue
-    fi
+    while true
+    do
+        read -p "Please enter table name: " TBName
+        # Check first if the input is empty
+        if [[ -z $TBName ]]
+        then
+            echo "Input is empty."
+            continue
+        else
+            break
+        fi
+    done
     # Check if the same table/file exists or not
     if [[ -e ${TBName}.txt ]]
     then
