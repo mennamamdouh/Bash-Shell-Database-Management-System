@@ -22,13 +22,18 @@ listTBs(){
 }
 
 deleteData(){
-    read -p "Please enter the table name: " TBName
-    # Check first if the input is empty
-    if [[ -z $TBName ]]
-    then
-        echo "Input is empty."
-        continue
-    fi
+    while true
+    do
+        read -p "Please enter the table name: " TBName
+        # Check first if the input is empty
+        if [[ -z $TBName ]]
+        then
+            echo "Input is empty."
+            continue
+        else
+            break
+        fi
+    done
     # Check if the same table/file exists or not
     if [[ -e ${TBName}.txt ]]
     then
@@ -66,13 +71,18 @@ deleteData(){
 }
 
 updateData(){
-    read -p "Please enter the table name: " TBName
-    # Check first if the input is empty
-    if [[ -z $TBName ]]
-    then
-        echo "Input is empty."
-        continue
-    fi
+    while true
+    do
+        read -p "Please enter the table name: " TBName
+        # Check first if the input is empty
+        if [[ -z $TBName ]]
+        then
+            echo "Input is empty."
+            continue
+        else
+            break
+        fi
+    done
     # Check if the same table/file exists or not
     if [[ -e ${TBName}.txt ]]
     then
@@ -132,13 +142,18 @@ updateData(){
 }
 
 dropTB(){
-    read -p "Please enter the table name: " TBName
-    # Check first if the input is empty
-    if [[ -z $TBName ]]
-    then
-        echo "Input is empty."
-        continue
-    fi
+    while true
+    do
+        read -p "Please enter the table name: " TBName
+        # Check first if the input is empty
+        if [[ -z $TBName ]]
+        then
+            echo "Input is empty."
+            continue
+        else
+            break
+        fi
+    done
     # All we do here is removing the meta and data files of the targeted table
     metaFileName="${TBName}_META.txt"
     if [[ -e ${TBName}.txt && -e ${metaFileName} ]]
@@ -155,13 +170,18 @@ dropTB(){
 }
 
 retrieveData(){
-    read -p "Please enter the table name: " TBName
-    # Check first if the input is empty
-    if [[ -z $TBName ]]
-    then
-        echo "Input is empty."
-        continue
-    fi
+    while true
+    do
+        read -p "Please enter the table name: " TBName
+        # Check first if the input is empty
+        if [[ -z $TBName ]]
+        then
+            echo "Input is empty."
+            continue
+        else
+            break
+        fi
+    done
     # Check if the same table/file exists or not
     if [[ -e ${TBName}.txt ]]
     then
@@ -181,13 +201,18 @@ retrieveData(){
 }
 
 insertData(){
-    read -p "Please enter the table name: " TBName
-    # Check first if the input is empty
-    if [[ -z $TBName ]]
-    then
-        echo "Input is empty."
-        continue
-    fi
+    while true
+    do
+        read -p "Please enter the table name: " TBName
+        # Check first if the input is empty
+        if [[ -z $TBName ]]
+        then
+            echo "Input is empty."
+            continue
+        else
+            break
+        fi
+    done
     # Check if the same table/file exists or not
     if [[ -e ${TBName}.txt ]]
     then
@@ -234,13 +259,25 @@ insertData(){
 }
 
 createTB(){
-    read -p "Please enter table name: " TBName
-    # Check first if the input is empty
-    if [[ -z $TBName ]]
-    then
-        echo "Input is empty."
-        continue
-    fi
+    while true
+    do
+        read -p "Please enter table name: " TBName
+        # Check first if the input is empty
+        if [[ -z $TBName ]]
+        then
+            echo "Input is empty."
+            continue
+        else
+            # Check if the table name entered starts with anything rather than a letter
+            if [[ ${TBName:0:1} == [[:alpha:]] ]]
+            then
+                break
+            else
+                echo "Database name shouldn't start with a number."
+                continue
+            fi
+        fi
+    done
     # Check if the same table/file exists or not
     if [[ -e ${TBName}.txt ]]
     then
