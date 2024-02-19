@@ -4,13 +4,18 @@
 # Also, it has all the functions that are responsible of each functionality in the options.
 
 dropDB(){
-    read -p "Please Enter Database Name: " DBName
-    # Check first if the input is empty
-    if [[ -z $DBName ]]
-    then
-        echo "Input is empty."
-        continue
-    fi
+    while true
+    do
+        read -p "Please Enter Database Name: " DBName
+        # Check first if the input is empty
+        if [[ -z $DBName ]]
+        then
+            echo "Input is empty."
+            continue
+        else
+            break
+        fi
+    done
     # Check if the targeted directory exists before removing the directory
     if [[ -e $DBDir/$DBName ]]
     then
@@ -34,13 +39,18 @@ listDBs(){
 }
 
 connectDB(){
-    read -p "Please enter the database name: " ConDB
-    # Check first if the input is empty
-    if [[ -z $ConDB ]]
-    then
-        echo "Input is empty."
-        continue
-    fi
+    while true
+    do
+        read -p "Please enter the database name: " ConDB
+        # Check first if the input is empty
+        if [[ -z $ConDB ]]
+        then
+            echo "Input is empty."
+            continue
+        else
+            break
+        fi
+    done
     # Check if the targeted database exists before connecting/directing to it
     if [[ -e "$DBDir/$ConDB" ]]
     then
@@ -59,13 +69,18 @@ connectDB(){
 }
 
 createDB(){
-    read -p "Please enter database name: " DBName
-    # Check first if the input is empty
-    if [[ -z $DBName ]]
-    then
-        echo "Input is empty."
-        continue
-    fi
+    while true
+    do
+        read -p "Please enter database name: " DBName
+        # Check first if the input is empty
+        if [[ -z $DBName ]]
+        then
+            echo "Input is empty."
+            continue
+        else
+            break
+        fi
+    done
     # Check if the same directory name already exists which means that the database already exists
     if [[ ! -e "$DBDir/$DBName" ]]
     then
