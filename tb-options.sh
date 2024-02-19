@@ -268,7 +268,14 @@ createTB(){
             echo "Input is empty."
             continue
         else
-            break
+            # Check if the table name entered starts with anything rather than a letter
+            if [[ ${TBName:0:1} == [[:alpha:]] ]]
+            then
+                break
+            else
+                echo "Database name shouldn't start with a number."
+                continue
+            fi
         fi
     done
     # Check if the same table/file exists or not

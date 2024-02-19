@@ -78,9 +78,17 @@ createDB(){
             echo "Input is empty."
             continue
         else
-            break
+            # Check if the database name entered starts with anything rather than a letter
+            if [[ ${DBName:0:1} == [[:alpha:]] ]]
+            then
+                break
+            else
+                echo "Database name shouldn't start with a number."
+                continue
+            fi
         fi
-    done
+    done        
+
     # Check if the same directory name already exists which means that the database already exists
     if [[ ! -e "$DBDir/$DBName" ]]
     then
