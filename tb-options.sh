@@ -6,6 +6,23 @@
 
 shopt -s extglob
 
+checkDataType() {
+    # Variable $1 represents the input that we want to check its data type
+    case $1 in
+        +([a-zA-Z]))
+            echo "varchar"
+        ;;
+
+        +([1-9]))
+            echo "number"
+        ;;
+
+        *)
+            echo "invalid"
+        ;;
+    esac
+}
+
 listTBs(){
     # Retrieve the database's name
     DBName=$(pwd | awk -F/ '{print $NF}')
@@ -228,7 +245,7 @@ insertData(){
             do
                 read -p "Enter ${columns[i]}: " data       
                 result=$(checkDataType ${data})
-                if [[ "${result}" != "invalid" ]]
+                if [[ "${result}" = "${datatypes[i]}" ]]
                 then
                     # This condition checks whether there're duplicates for the pk or not
                     if [[ $i -eq 0 ]]
@@ -352,23 +369,6 @@ createTB(){
         done
         echo "Table is created successfully."
     fi
-}
-
-checkDataType() {
-    # Variable $1 represents the input that we want to check its data type
-    case $1 in
-        +([a-zA-Z]))
-            echo "varchar"
-        ;;
-
-        +([1-9]))
-            echo "number"
-        ;;
-
-        *)
-            echo "invalid"
-        ;;
-    esac
 }
 
 displayTbOptions() {
